@@ -1,0 +1,50 @@
+{
+  "workflow": {
+    "workflow_id": "wf_refund_01",
+    "title": "Customer Refund Onboarding Guide",
+    "window_title": "Enterprise Billing Portal",
+    "steps": [
+      {
+        "step_num": 1,
+        "target_button": "Open Customer Invoices",
+        "badge_text": "Step 1: Click 'Open Customer Invoices'",
+        "voice_text": "Welcome! Step 1: Click Open Customer Invoices.",
+        "verify_screen_text": "Open Customer Invoices (Done)"
+      },
+      {
+        "step_num": 2,
+        "target_button": "Verify Account Balance",
+        "badge_text": "Step 2: Click 'Verify Account Balance'",
+        "voice_text": "Great! Step 2: Click Verify Account Balance.",
+        "verify_screen_text": "Verify Account Balance (Done)"
+      },
+      {
+        "step_num": 3,
+        "target_button": "Approve & Issue Refund",
+        "badge_text": "Step 3: Click 'Approve & Issue Refund'",
+        "voice_text": "Almost done! Step 3: Click Approve and Issue Refund.",
+        "verify_screen_text": "Approve & Issue Refund (Done)"
+      }
+    ]
+  },
+  "telemetry": [
+    {
+      "step_num": 1,
+      "target_button": "Open Customer Invoices",
+      "duration_seconds": 0.5,
+      "timestamp": "22:55:16"
+    },
+    {
+      "step_num": 2,
+      "target_button": "Verify Account Balance",
+      "duration_seconds": 0.2,
+      "timestamp": "22:55:17"
+    },
+    {
+      "step_num": 3,
+      "target_button": "Approve & Issue Refund",
+      "duration_seconds": 0.4,
+      "timestamp": "22:55:17"
+    }
+  ]
+}

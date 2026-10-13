@@ -2,8 +2,8 @@ import sys
 import time
 import math
 import ctypes
+import requests
 
-# LOCK WINDOWS DPI SCALING SO PYWINAUTO AND PYQT6 PIXELS MATCH 100%
 try:
     ctypes.windll.shcore.SetProcessDpiAwareness(2)
 except Exception:
@@ -20,33 +20,7 @@ from ui_scanner import LuluUIScanner
 
 LULU_THEME_HEX = "#fc038c"
 LULU_HOT_CORE_HEX = "#ff99d6"
-
-SAMPLE_WORKFLOW = {
-    "window_title": "Enterprise Billing Portal",
-    "steps": [
-        {
-            "step_num": 1,
-            "target_button": "Open Customer Invoices",
-            "badge_text": "Step 1: Click 'Open Customer Invoices'",
-            "voice_text": "Welcome! Step 1: Click Open Customer Invoices.",
-            "verify_screen_text": "Open Customer Invoices (Done)"
-        },
-        {
-            "step_num": 2,
-            "target_button": "Verify Account Balance",
-            "badge_text": "Step 2: Click 'Verify Account Balance'",
-            "voice_text": "Great! Step 2: Click Verify Account Balance.",
-            "verify_screen_text": "Verify Account Balance (Done)"
-        },
-        {
-            "step_num": 3,
-            "target_button": "Approve & Issue Refund",
-            "badge_text": "Step 3: Click 'Approve & Issue Refund'",
-            "voice_text": "Almost done! Step 3: Click Approve and Issue Refund.",
-            "verify_screen_text": "Approve & Issue Refund (Done)"
-        }
-    ]
-}
+API_BASE_URL = "http://127.0.0.1:5000"
 
 class LuluOverlay(QWidget):
     def __init__(self):
@@ -68,13 +42,15 @@ class LuluOverlay(QWidget):
         self.cur_y = 300.0
         self.target_x = 300.0
         self.target_y = 300.0
-        self.instruction = "Scanning for Enterprise Billing Portal..."
+        self.instruction = "Connecting to Lulu Backend Server..."
         
         self.phase = 0.0
         self.ripple_radius = 10.0
         self.ripple_alpha = 220
 
-        self.steps = SAMPLE_WORKFLOW["steps"]
+        # Fetch workflow steps from the Backend Database API
+        self.workflow = self.fetch_workflow_from_server()
+        self.steps = self.workflow["steps"]
         self.current_step_idx = 0
         self.step_start_time = time.time()
         self.spoken_current_step = False
@@ -89,8 +65,25 @@ class LuluOverlay(QWidget):
         self.scan_timer.timeout.connect(self.update_fsm_and_scan)
         self.scan_timer.start(350)
 
+    def fetch_workflow_from_server(self):
+        try:
+            res = requests.get(f"{API_BASE_URL}/api/workflow", timeout=2)
+            return res.json()
+        except Exception as e:
+            print(f"[API Warning] Using fallback workflow: {e}")
+            return {"window_title": "Enterprise Billing Portal", "steps": []}
+
+    def send_telemetry_to_server(self, step_obj, duration):
+        try:
+            requests.post(f"{API_BASE_URL}/api/telemetry", json={
+                "step_num": step_obj["step_num"],
+                "target_button": step_obj["target_button"],
+                "duration_seconds": duration
+            }, timeout=1.5)
+        except Exception as e:
+            print(f"[Telemetry Upload Warning]: {e}")
+
     def physical_to_logical(self, phys_x, phys_y):
-        """Converts raw Windows physical pixels into exact PyQt6 screen coordinates."""
         screen = QGuiApplication.screenAt(QPoint(int(phys_x), int(phys_y)))
         if not screen:
             screen = QGuiApplication.primaryScreen()
@@ -99,21 +92,26 @@ class LuluOverlay(QWidget):
         return float(local_pos.x()), float(local_pos.y())
 
     def update_fsm_and_scan(self):
-        if self.workflow_finished:
+        if self.workflow_finished or not self.steps:
             return
 
-        elements = self.scanner.scan_window(SAMPLE_WORKFLOW["window_title"])
+        elements = self.scanner.scan_window(self.workflow["window_title"])
         if not elements:
             self.instruction = "Waiting for 'Enterprise Billing Portal' window..."
             return
 
         current_step = self.steps[self.current_step_idx]
 
-        # 1. Check if current step button was clicked and marked (Done)
+        # 1. Check if current step button was clicked
         if self.scanner.is_text_on_screen(elements, current_step["verify_screen_text"]):
             duration = round(time.time() - self.step_start_time, 1)
             self.telemetry_results.append(f"Step {current_step['step_num']}: {duration}s")
-            print(f"[Lulu Telemetry] Step {current_step['step_num']} completed in {duration}s")
+            
+            # This is the new line that proves it is sending!
+            print(f"[Lulu Telemetry] Step {current_step['step_num']} completed in {duration}s -> Sent to Dashboard!")
+            
+            # Send live timing data to Manager Web Dashboard!
+            self.send_telemetry_to_server(current_step, duration)
 
             self.current_step_idx += 1
             self.step_start_time = time.time()
@@ -122,13 +120,13 @@ class LuluOverlay(QWidget):
             if self.current_step_idx >= len(self.steps):
                 self.workflow_finished = True
                 summary = " | ".join(self.telemetry_results)
-                self.instruction = f"🎉 Complete! Times: {summary}"
-                self.voice.speak("Awesome job! You have completed the entire onboarding workflow.")
+                self.instruction = f"🎉 Complete! Sent to Dashboard: {summary}"
+                self.voice.speak("Awesome job! Your onboarding telemetry has been sent to the Manager Dashboard.")
                 return
 
             current_step = self.steps[self.current_step_idx]
 
-        # 2. Locate exact button center and adjust for laptop DPI scaling
+        # 2. Locate exact button center
         coords = self.scanner.find_element_center(elements, current_step["target_button"])
         if coords:
             lx, ly = self.physical_to_logical(coords[0], coords[1])
@@ -213,7 +211,7 @@ class LuluOverlay(QWidget):
         painter.drawPolygon(arrow)
 
         # 5. NEON GLASSMORPHISM FLOATING PILL BADGE
-        box_x, box_y, box_w, box_h = cx + 28.0, cy - 22.0, 430.0, 42.0
+        box_x, box_y, box_w, box_h = cx + 28.0, cy - 22.0, 440.0, 42.0
         pill_rect = QRectF(box_x, box_y, box_w, box_h)
 
         for i in range(3, 0, -1):
