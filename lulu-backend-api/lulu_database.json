@@ -7,7 +7,7 @@
       {
         "step_num": 1,
         "target_button": "Open Customer Invoices",
-        "badge_text": "Step 1: Click 'Open Customer Invoices'",
+        "badge_text": "Step 1: Let us begin by opening the invoices.",
         "voice_text": "Welcome! Step 1: Click Open Customer Invoices.",
         "verify_screen_text": "Open Customer Invoices (Done)"
       },
@@ -45,6 +45,42 @@
       "target_button": "Approve & Issue Refund",
       "duration_seconds": 0.4,
       "timestamp": "22:55:17"
+    },
+    {
+      "step_num": 1,
+      "target_button": "Open Customer Invoices",
+      "duration_seconds": 5.5,
+      "timestamp": "23:56:17"
+    },
+    {
+      "step_num": 2,
+      "target_button": "Verify Account Balance",
+      "duration_seconds": 2.4,
+      "timestamp": "23:56:20"
+    },
+    {
+      "step_num": 3,
+      "target_button": "Approve & Issue Refund",
+      "duration_seconds": 1.5,
+      "timestamp": "23:56:21"
+    },
+    {
+      "step_num": 1,
+      "target_button": "Open Customer Invoices",
+      "duration_seconds": 0.4,
+      "timestamp": "23:59:37"
+    },
+    {
+      "step_num": 2,
+      "target_button": "Verify Account Balance",
+      "duration_seconds": 0.4,
+      "timestamp": "23:59:37"
+    },
+    {
+      "step_num": 3,
+      "target_button": "Approve & Issue Refund",
+      "duration_seconds": 0.3,
+      "timestamp": "23:59:37"
     }
   ]
 }
