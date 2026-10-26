@@ -1,4 +1,4 @@
-# 🚀 Lulu Enterprise Digital Adoption Platform (DAP)
+#  Lulu Enterprise Digital Adoption Platform (DAP)
 
 A full-stack, cloud-connected interactive desktop onboarding assistant and enterprise behavioral telemetry tracker.
 
@@ -6,7 +6,7 @@ Lulu acts as a dynamic, floating UI overlay that guides new employees through co
 
 ---
 
-## 🏗️ System Architecture
+##  System Architecture
 
 The project consists of three core components communicating over HTTP and WebSockets:
 
@@ -31,18 +31,18 @@ The project consists of three core components communicating over HTTP and WebSoc
 
 ---
 
-## ✨ Key Enterprise Features
+##  Key Enterprise Features
 
-* ⚡ **Zero-Delay WebSocket Sync:** Step completions flash instantly on the manager dashboard; workflow updates deploy to trainee screens in real-time without app restarts.
-* 📁 **Multi-Workflow & Multi-App Support:** Manage guides for different desktop portals (Billing, CRM, Inventory). Lulu auto-detects which application window is focused.
-* 🔐 **Manager JWT Authentication:** Secure login session (`admin` / `luluadmin123`) protecting workflow deployment and telemetry resetting.
-* 📊 **Live Bottleneck Analytics:** Animated Chart.js dashboard color-coding step durations (pink indicators for steps taking ≥ 8.0s).
-* 🎙️ **Neural Voice Narration:** Edge-TTS speech engine gives clear spoken instructions at every step.
-* 🛡️ **Network-Resilient Cloud Architecture:** MongoDB Atlas connection with SSL bypass to prevent Windows ISP connection drops (`TLSV1_ALERT_INTERNAL_ERROR`).
+*  **Zero-Delay WebSocket Sync:** Step completions flash instantly on the manager dashboard; workflow updates deploy to trainee screens in real-time without app restarts.
+*  **Multi-Workflow & Multi-App Support:** Manage guides for different desktop portals (Billing, CRM, Inventory). Lulu auto-detects which application window is focused.
+*  **Manager JWT Authentication:** Secure login session (`admin` / `luluadmin123`) protecting workflow deployment and telemetry resetting.
+*  **Live Bottleneck Analytics:** Animated Chart.js dashboard color-coding step durations (pink indicators for steps taking ≥ 8.0s).
+*  **Neural Voice Narration:** Edge-TTS speech engine gives clear spoken instructions at every step.
+*  **Network-Resilient Cloud Architecture:** MongoDB Atlas connection with SSL bypass to prevent Windows ISP connection drops (`TLSV1_ALERT_INTERNAL_ERROR`).
 
 ---
 
-## 🛠️ Prerequisites & Installation
+##  Prerequisites & Installation
 
 ### 1. Requirements
 * **Python 3.10+** (Tested on Python 3.11)
@@ -67,7 +67,7 @@ MANAGER_PASSWORD=luluadmin123
 
 ---
 
-## 🚀 Running the System
+##  Running the System
 
 ### Step 1: Start the Backend Server
 ```powershell
@@ -100,7 +100,7 @@ python demo-billing-app\crm_software.py
 
 ---
 
-## 🧭 Troubleshooting
+##  Troubleshooting
 
 * **Manager Dashboard Login:**
   Click **Manager Login** on `http://127.0.0.1:5000` and use `admin` / `luluadmin123`.
