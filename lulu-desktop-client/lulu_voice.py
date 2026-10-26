@@ -15,8 +15,13 @@ LULU_VOICE = "en-US-AriaNeural"
 class LuluVoiceEngine:
     def __init__(self):
         pygame.mixer.init()
-        self.temp_dir = r"E:\DevCache\temp_audio"
-        os.makedirs(self.temp_dir, exist_ok=True)
+        # Safely determine temp directory for audio cache
+        try:
+            self.temp_dir = r"E:\DevCache\temp_audio"
+            os.makedirs(self.temp_dir, exist_ok=True)
+        except Exception:
+            self.temp_dir = os.path.join(tempfile.gettempdir(), "lulu_audio_cache")
+            os.makedirs(self.temp_dir, exist_ok=True)
         self.counter = 0
 
     def speak(self, text):

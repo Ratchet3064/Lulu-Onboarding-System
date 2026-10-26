@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lulu Enterprise Onboarding Command Center</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #0b0b14;
+        }
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .neon-glow-pink {
+            box-shadow: 0 0 25px rgba(252, 3, 140, 0.35);
+        }
+        .neon-border-pink {
+            border-color: #fc038c;
+            box-shadow: 0 0 15px rgba(252, 3, 140, 0.25);
+        }
+        .glass-panel {
+            background: rgba(21, 21, 37, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.2); opacity: 0.3; }
+            100% { transform: scale(0.95); opacity: 0.8; }
+        }
+        .pulse-dot {
+            animation: pulse-ring 2s infinite ease-in-out;
+        }
+        @keyframes flash-highlight {
+            0% { background-color: rgba(252, 3, 140, 0.35); }
+            100% { background-color: transparent; }
+        }
+        .flash-row {
+            animation: flash-highlight 1.8s ease-out;
+        }
+    </style>
+</head>
+<body class="text-slate-100 min-h-screen p-4 md:p-8 selection:bg-pink-500 selection:text-white">
+    <div class="max-w-7xl mx-auto space-y-6">
+
+        <!-- Top Navigation Bar -->
+        <header class="glass-panel rounded-2xl p-5 flex flex-wrap items-center justify-between gap-4 border border-slate-800 shadow-2xl">
+            <div class="flex items-center gap-4">
+                <div class="relative flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-[#fc038c] to-[#9333ea] shadow-lg shadow-pink-500/20">
+                    <span class="text-2xl font-black tracking-tighter text-white">L</span>
+                    <span class="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-400 border-2 border-[#0b0b14]"></span>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="text-2xl font-black tracking-tight text-white">
+                            LULU <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#fc038c] to-purple-400 font-extrabold">ENTERPRISE</span>
+                        </h1>
+                        <span class="px-2.5 py-0.5 text-[10px] font-bold tracking-wider uppercase rounded-full bg-pink-500/10 text-pink-400 border border-pink-500/20">
+                            v2.0 Real-Time
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-400">Autonomous Digital Adoption & Multimodal Telemetry Hub</p>
+                </div>
+            </div>
+
+            <!-- Status Badges & Auth Controls -->
+            <div class="flex flex-wrap items-center gap-3 text-xs">
+                <!-- WebSocket Live Status -->
+                <div id="wsStatusBadge" class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-700/80">
+                    <span id="wsStatusDot" class="w-2.5 h-2.5 rounded-full bg-amber-400 pulse-dot"></span>
+                    <span id="wsStatusText" class="font-semibold text-slate-300">Connecting to WebSocket...</span>
+                </div>
+
+                <!-- Active Trainee Clients Counter -->
+                <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-purple-950/40 border border-purple-500/30 text-purple-300">
+                    <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                    </svg>
+                    <span>Lulu HUDs: <strong id="connectedClientsCount" class="text-white font-mono">0</strong></span>
+                </div>
+
+                <!-- Manager Auth Session Status -->
+                <div id="authStatusContainer" class="flex items-center gap-2">
+                    <!-- Populated dynamically via JS -->
+                </div>
+            </div>
+        </header>
+
+        <!-- Multi-Workflow Selector Bar -->
+        <section class="glass-panel rounded-2xl p-5 border border-slate-800 shadow-xl space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                        <span>📁 Enterprise Workflows</span>
+                        <span id="activeWorkflowBadge" class="text-xs font-semibold px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                            Active
+                        </span>
+                    </h2>
+                    <p class="text-xs text-slate-400">Switch target enterprise application workflows or deploy live step updates.</p>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2">
+                    <select id="workflowSelector" onchange="onWorkflowSelectionChange(this.value)" class="bg-[#10101c] border border-slate-700 text-slate-200 text-sm rounded-xl px-4 py-2 outline-none focus:border-[#fc038c] font-medium transition cursor-pointer">
+                        <!-- Populated by JS -->
+                    </select>
+
+                    <button onclick="setActiveWorkflow()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold px-4 py-2 rounded-xl text-xs flex items-center gap-2 shadow-lg shadow-emerald-500/20 transition transform active:scale-95">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        <span>Set Active for Trainees</span>
+                    </button>
+
+                    <button onclick="openNewWorkflowModal()" class="bg-[#1c1c2e] hover:bg-slate-800 text-slate-300 font-medium px-3.5 py-2 rounded-xl text-xs border border-slate-700 flex items-center gap-1.5 transition">
+                        <span>+ New Workflow</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Workflow Metadata Info Bar -->
+            <div id="workflowMetaInfo" class="bg-[#0f0f1b] p-3 rounded-xl border border-slate-800/80 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-400">
+                <div class="flex items-center gap-4">
+                    <span>Target Window: <strong id="currentWindowTitle" class="text-pink-400 font-mono">--</strong></span>
+                    <span>Department: <strong id="currentCategory" class="text-purple-300">--</strong></span>
+                </div>
+                <div>
+                    <span>Workflow ID: <strong id="currentWorkflowId" class="text-slate-300 font-mono">--</strong></span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Live Interactive Workflow Builder -->
+        <section class="glass-panel rounded-2xl p-6 border border-slate-800 shadow-xl relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 via-[#fc038c] to-purple-600"></div>
+            
+            <div class="flex flex-wrap items-center justify-between gap-4 mb-5">
+                <div>
+                    <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                        <span>🛠️ Live Workflow Builder</span>
+                        <span class="text-xs px-2 py-0.5 rounded bg-pink-500/10 text-pink-400 border border-pink-500/20">Zero-Restart Sync</span>
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-0.5">Edits pushed here immediately synchronize with Lulu's desktop HUD across trainees in real time.</p>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <button onclick="saveAndDeployWorkflow()" class="bg-[#fc038c] hover:bg-pink-600 text-white px-5 py-2.5 rounded-xl text-xs font-bold transition shadow-lg shadow-pink-500/30 flex items-center gap-2 transform active:scale-95">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                        <span>Save & Push to Lulu HUDs</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Steps Container -->
+            <div id="builderList" class="space-y-3.5">
+                <!-- Dynamically rendered steps -->
+            </div>
+
+            <div class="pt-4 flex items-center justify-between">
+                <button onclick="addNewStep()" class="border-2 border-dashed border-slate-700 hover:border-pink-500/60 text-slate-400 hover:text-pink-400 py-3 px-6 rounded-xl transition text-xs font-bold flex items-center gap-2">
+                    <span class="text-base">+</span> Add Next Step
+                </button>
+            </div>
+        </section>
+
+        <!-- Telemetry & Analytics Grid -->
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Left: Bottleneck Chart -->
+            <div class="glass-panel border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h3 class="text-base font-bold text-white flex items-center gap-2">
+                                <span>📊 Step Duration Bottlenecks</span>
+                            </h3>
+                            <p class="text-xs text-slate-400">Pink indicators highlight steps taking ≥ 8.0 seconds.</p>
+                        </div>
+                        <span class="text-[10px] font-mono uppercase bg-slate-800 text-slate-300 px-2 py-1 rounded">Real-Time</span>
+                    </div>
+                    <div class="relative h-[260px] w-full flex items-center justify-center">
+                        <canvas id="telemetryChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Real-time Telemetry Event Feed -->
+            <div class="glass-panel border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="text-base font-bold text-white flex items-center gap-2">
+                            <span>⚡ Live Telemetry Stream</span>
+                            <span class="w-2 h-2 rounded-full bg-emerald-400 pulse-dot"></span>
+                        </h3>
+                        <p class="text-xs text-slate-400">Zero-latency step completions received via WebSockets.</p>
+                    </div>
+                    <button onclick="clearTelemetryData()" class="bg-[#171728] hover:bg-red-500/10 border border-slate-700 hover:border-red-500/40 text-slate-400 hover:text-red-400 px-3 py-1.5 rounded-lg text-xs font-semibold transition">
+                        Clear Feed
+                    </button>
+                </div>
+
+                <div class="overflow-y-auto max-h-[260px] pr-1.5 rounded-lg border border-slate-800/80">
+                    <table class="w-full text-left text-xs text-slate-300">
+                        <thead class="uppercase bg-[#141424] text-slate-400 sticky top-0 border-b border-slate-800 font-semibold tracking-wider">
+                            <tr>
+                                <th class="p-2.5">Time</th>
+                                <th class="p-2.5">Workflow / Step</th>
+                                <th class="p-2.5">Target</th>
+                                <th class="p-2.5">Duration</th>
+                                <th class="p-2.5 text-right">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="logTableBody" class="divide-y divide-slate-800/60 font-mono">
+                            <!-- Live rows inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Manager Login Modal -->
+    <div id="loginModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="glass-panel bg-[#121220] border border-pink-500/40 rounded-2xl max-w-md w-full p-6 shadow-2xl neon-border-pink relative">
+            <button onclick="closeLoginModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white font-bold text-lg">✕</button>
+            
+            <div class="text-center mb-6">
+                <div class="w-12 h-12 mx-auto rounded-xl bg-pink-500/10 border border-[#fc038c] flex items-center justify-center mb-3">
+                    <svg class="w-6 h-6 text-[#fc038c]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                </div>
+                <h3 class="text-xl font-bold text-white">Manager Authentication</h3>
+                <p class="text-xs text-slate-400 mt-1">Enter your manager credentials to authorize workflow edits and telemetry management.</p>
+            </div>
+
+            <form onsubmit="handleLoginSubmit(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Username</label>
+                    <input id="loginUsername" type="text" required value="admin" class="w-full bg-[#090912] border border-slate-700 text-white rounded-xl p-3 text-sm focus:border-[#fc038c] outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Password</label>
+                    <input id="loginPassword" type="password" required value="luluadmin123" class="w-full bg-[#090912] border border-slate-700 text-white rounded-xl p-3 text-sm focus:border-[#fc038c] outline-none">
+                </div>
+                
+                <div id="loginErrorMsg" class="hidden text-xs text-rose-400 bg-rose-500/10 border border-rose-500/30 p-2.5 rounded-lg text-center"></div>
+
+                <button type="submit" class="w-full bg-gradient-to-r from-[#fc038c] to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-bold py-3 rounded-xl text-sm transition shadow-lg shadow-pink-500/30">
+                    Verify & Authenticate
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Create New Workflow Modal -->
+    <div id="newWorkflowModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="glass-panel bg-[#121220] border border-slate-700 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative">
+            <button onclick="closeNewWorkflowModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white font-bold text-lg">✕</button>
+            
+            <h3 class="text-lg font-bold text-white mb-2">Create New Application Workflow</h3>
+            <p class="text-xs text-slate-400 mb-4">Define a new onboarding guide for any enterprise desktop or web portal.</p>
+
+            <form onsubmit="handleCreateWorkflowSubmit(event)" class="space-y-3.5 text-xs">
+                <div>
+                    <label class="block text-slate-300 font-semibold mb-1">Workflow Unique ID (e.g. wf_inventory_03)</label>
+                    <input id="newWfId" type="text" required placeholder="wf_custom_app" class="w-full bg-[#090912] border border-slate-700 text-white rounded-xl p-2.5 outline-none focus:border-pink-500 font-mono">
+                </div>
+                <div>
+                    <label class="block text-slate-300 font-semibold mb-1">Workflow Title</label>
+                    <input id="newWfTitle" type="text" required placeholder="Enterprise Portal Onboarding Guide" class="w-full bg-[#090912] border border-slate-700 text-white rounded-xl p-2.5 outline-none focus:border-pink-500">
+                </div>
+                <div>
+                    <label class="block text-slate-300 font-semibold mb-1">Target Window Title (Exact match)</label>
+                    <input id="newWfWindow" type="text" required placeholder="Enterprise Billing Portal" class="w-full bg-[#090912] border border-slate-700 text-white rounded-xl p-2.5 outline-none focus:border-pink-500">
+                </div>
+                <div>
+                    <label class="block text-slate-300 font-semibold mb-1">Category / Department</label>
+                    <input id="newWfCategory" type="text" required placeholder="Finance & Billing" class="w-full bg-[#090912] border border-slate-700 text-white rounded-xl p-2.5 outline-none focus:border-pink-500">
+                </div>
+
+                <div class="pt-2 flex justify-end gap-2">
+                    <button type="button" onclick="closeNewWorkflowModal()" class="px-4 py-2 rounded-xl border border-slate-700 text-slate-300 hover:bg-slate-800">Cancel</button>
+                    <button type="submit" class="px-5 py-2 rounded-xl bg-pink-600 hover:bg-pink-500 text-white font-bold">Create Workflow</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Frontend Application Logic -->
+    <script>
+        // State
+        let allWorkflows = [];
+        let selectedWorkflow = null;
+        let chartInstance = null;
+        let wsConnection = null;
+        let managerToken = localStorage.getItem('lulu_manager_jwt');
+
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            updateAuthStatusUI();
+            initWebSocket();
+            loadWorkflows();
+            loadTelemetryHistory();
+        });
+
+        // ==========================================
+        // AUTHENTICATION & SESSIONS
+        // ==========================================
+        function updateAuthStatusUI() {
+            const container = document.getElementById('authStatusContainer');
+            if (managerToken) {
+                container.innerHTML = `
+                    <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-emerald-300">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                        <span>Manager: <strong>Admin</strong></span>
+                    </div>
+                    <button onclick="logoutManager()" class="px-3 py-1.5 rounded-xl bg-[#1a1a2e] hover:bg-rose-900/30 border border-slate-700 hover:border-rose-500/40 text-slate-400 hover:text-rose-300 transition">
+                        Logout
+                    </button>
+                `;
+            } else {
+                container.innerHTML = `
+                    <button onclick="openLoginModal()" class="px-3.5 py-1.5 rounded-xl bg-[#fc038c]/15 hover:bg-[#fc038c]/25 border border-[#fc038c]/50 text-pink-300 font-bold transition flex items-center gap-1.5">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
+                        <span>Manager Login</span>
+                    </button>
+                `;
+            }
+        }
+
+        function openLoginModal() {
+            document.getElementById('loginModal').classList.remove('hidden');
+        }
+
+        function closeLoginModal() {
+            document.getElementById('loginModal').classList.add('hidden');
+            document.getElementById('loginErrorMsg').classList.add('hidden');
+        }
+
+        async function handleLoginSubmit(e) {
+            e.preventDefault();
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+            const errorDiv = document.getElementById('loginErrorMsg');
+
+            try {
+                const res = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                if (!res.ok) {
+                    const data = await res.json();
+                    throw new Error(data.detail || "Authentication failed");
+                }
+
+                const data = await res.json();
+                managerToken = data.access_token;
+                localStorage.setItem('lulu_manager_jwt', managerToken);
+                closeLoginModal();
+                updateAuthStatusUI();
+                showNotification("✅ Authenticated as Manager!");
+            } catch (err) {
+                errorDiv.textContent = err.message;
+                errorDiv.classList.remove('hidden');
+            }
+        }
+
+        function logoutManager() {
+            managerToken = null;
+            localStorage.removeItem('lulu_manager_jwt');
+            updateAuthStatusUI();
+            showNotification("ℹ️ Logged out of manager session");
+        }
+
+        function getAuthHeaders() {
+            const headers = { 'Content-Type': 'application/json' };
+            if (managerToken) {
+                headers['Authorization'] = `Bearer ${managerToken}`;
+            }
+            return headers;
+        }
+
+        // ==========================================
+        // WEBSOCKET REAL-TIME SYNC
+        // ==========================================
+        function initWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws/dashboard`;
+
+            wsConnection = new WebSocket(wsUrl);
+
+            wsConnection.onopen = () => {
+                document.getElementById('wsStatusDot').className = "w-2.5 h-2.5 rounded-full bg-emerald-400";
+                document.getElementById('wsStatusText').textContent = "Live WebSocket Sync Active";
+                document.getElementById('wsStatusText').className = "font-semibold text-emerald-400";
+            };
+
+            wsConnection.onmessage = (event) => {
+                try {
+                    const message = JSON.parse(event.data);
+                    handleIncomingWsMessage(message);
+                } catch (e) {
+                    console.error("WS Parse Error:", e);
+                }
+            };
+
+            wsConnection.onclose = () => {
+                document.getElementById('wsStatusDot').className = "w-2.5 h-2.5 rounded-full bg-rose-500 pulse-dot";
+                document.getElementById('wsStatusText').textContent = "Disconnected (Reconnecting...)";
+                document.getElementById('wsStatusText').className = "font-semibold text-rose-400";
+                setTimeout(initWebSocket, 2500);
+            };
+
+            wsConnection.onerror = () => {
+                wsConnection.close();
+            };
+        }
+
+        function handleIncomingWsMessage(msg) {
+            console.log("[WebSocket Event]:", msg);
+
+            if (msg.type === "CLIENT_COUNT_UPDATE") {
+                document.getElementById('connectedClientsCount').textContent = msg.count || 0;
+            } else if (msg.type === "NEW_TELEMETRY") {
+                appendTelemetryRow(msg.data, true);
+                updateChartWithNewLog(msg.data);
+                showAudioPing();
+            } else if (msg.type === "WORKFLOW_UPDATED" || msg.type === "WORKFLOW_SWITCHED") {
+                loadWorkflows(msg.workflow ? msg.workflow.workflow_id : null);
+            } else if (msg.type === "TELEMETRY_CLEARED") {
+                document.getElementById('logTableBody').innerHTML = '';
+                if (chartInstance) {
+                    chartInstance.data.labels = [];
+                    chartInstance.data.datasets[0].data = [];
+                    chartInstance.update();
+                }
+            }
+        }
+
+        function showAudioPing() {
+            // Optional subtle Web Audio API feedback
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5 note
+                gain.gain.setValueAtTime(0.04, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.18);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.18);
+            } catch (e) {}
+        }
+
+        // ==========================================
+        // WORKFLOW MANAGEMENT
+        // ==========================================
+        async function loadWorkflows(preferredId = null) {
+            try {
+                const res = await fetch('/api/workflows');
+                allWorkflows = await res.json();
+
+                const selector = document.getElementById('workflowSelector');
+                selector.innerHTML = allWorkflows.map(wf => `
+                    <option value="${wf.workflow_id}" ${wf.is_active ? 'selected' : ''}>
+                        ${wf.title} (${wf.category || 'App'}) ${wf.is_active ? '★' : ''}
+                    </option>
+                `).join('');
+
+                const activeWf = allWorkflows.find(w => w.is_active) || allWorkflows[0];
+                const targetWf = preferredId ? (allWorkflows.find(w => w.workflow_id === preferredId) || activeWf) : activeWf;
+
+                if (targetWf) {
+                    selector.value = targetWf.workflow_id;
+                    selectWorkflow(targetWf);
+                }
+            } catch (err) {
+                console.error("Failed to load workflows:", err);
+            }
+        }
+
+        function onWorkflowSelectionChange(wfId) {
+            const wf = allWorkflows.find(w => w.workflow_id === wfId);
+            if (wf) selectWorkflow(wf);
+        }
+
+        function selectWorkflow(wf) {
+            selectedWorkflow = JSON.parse(JSON.stringify(wf)); // deep clone
+            document.getElementById('currentWindowTitle').textContent = wf.window_title || 'N/A';
+            document.getElementById('currentCategory').textContent = wf.category || 'General';
+            document.getElementById('currentWorkflowId').textContent = wf.workflow_id;
+
+            const badge = document.getElementById('activeWorkflowBadge');
+            if (wf.is_active) {
+                badge.className = "text-xs font-semibold px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-400 border border-emerald-500/30";
+                badge.textContent = "⭐ Active for Trainees";
+            } else {
+                badge.className = "text-xs font-semibold px-2 py-0.5 rounded-md bg-slate-800 text-slate-400 border border-slate-700";
+                badge.textContent = "Draft / Inactive";
+            }
+
+            renderBuilderSteps();
+        }
+
+        function renderBuilderSteps() {
+            const container = document.getElementById('builderList');
+            if (!selectedWorkflow || !selectedWorkflow.steps || selectedWorkflow.steps.length === 0) {
+                container.innerHTML = `<p class="text-sm text-slate-500 italic p-4 text-center">No steps configured for this workflow. Click '+ Add Next Step' below.</p>`;
+                return;
+            }
+
+            container.innerHTML = selectedWorkflow.steps.map((s, i) => `
+                <div class="p-4 bg-[#141426] border-l-4 border-[#fc038c] rounded-xl grid grid-cols-1 md:grid-cols-2 gap-4 relative group hover:border-pink-400 transition">
+                    <button onclick="removeStep(${i})" class="absolute top-3 right-3 text-slate-500 hover:text-rose-400 font-bold text-xs opacity-60 group-hover:opacity-100 transition flex items-center gap-1">
+                        ✕ Remove
+                    </button>
+                    
+                    <div>
+                        <label class="text-[11px] font-semibold text-slate-400 block mb-1">Target Button / Control (Exact UI Match)</label>
+                        <input type="text" class="w-full bg-[#0a0a14] border border-slate-700/80 text-white rounded-lg p-2.5 text-xs focus:border-[#fc038c] outline-none font-mono" 
+                            value="${escapeHtml(s.target_button || '')}" oninput="selectedWorkflow.steps[${i}].target_button = this.value">
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-semibold text-slate-400 block mb-1">Success Verification Text (Done State)</label>
+                        <input type="text" class="w-full bg-[#0a0a14] border border-slate-700/80 text-white rounded-lg p-2.5 text-xs focus:border-[#fc038c] outline-none font-mono" 
+                            value="${escapeHtml(s.verify_screen_text || '')}" oninput="selectedWorkflow.steps[${i}].verify_screen_text = this.value">
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-semibold text-slate-400 block mb-1">Visual HUD Badge Instruction</label>
+                        <input type="text" class="w-full bg-[#0a0a14] border border-slate-700/80 text-white rounded-lg p-2.5 text-xs focus:border-[#fc038c] outline-none" 
+                            value="${escapeHtml(s.badge_text || '')}" oninput="selectedWorkflow.steps[${i}].badge_text = this.value">
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-semibold text-slate-400 block mb-1">Edge-TTS Voice Narration</label>
+                        <input type="text" class="w-full bg-[#0a0a14] border border-slate-700/80 text-[#38bdf8] rounded-lg p-2.5 text-xs focus:border-[#fc038c] outline-none font-medium" 
+                            value="${escapeHtml(s.voice_text || '')}" oninput="selectedWorkflow.steps[${i}].voice_text = this.value">
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function addNewStep() {
+            if (!selectedWorkflow) return;
+            const newNum = (selectedWorkflow.steps ? selectedWorkflow.steps.length : 0) + 1;
+            selectedWorkflow.steps.push({
+                step_num: newNum,
+                target_button: `Step ${newNum} Action`,
+                verify_screen_text: `Step ${newNum} Action (Done)`,
+                badge_text: `Step ${newNum}: Please click Step ${newNum} Action`,
+                voice_text: `Step ${newNum}: Please complete this action.`
+            });
+            renderBuilderSteps();
+        }
+
+        function removeStep(idx) {
+            if (!selectedWorkflow) return;
+            selectedWorkflow.steps.splice(idx, 1);
+            selectedWorkflow.steps.forEach((s, i) => s.step_num = i + 1);
+            renderBuilderSteps();
+        }
+
+        async function saveAndDeployWorkflow() {
+            if (!checkAuthOrPrompt()) return;
+            try {
+                const res = await fetch('/api/workflow', {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify(selectedWorkflow)
+                });
+                if (res.status === 401) {
+                    showAuthExpired();
+                    return;
+                }
+                const data = await res.json();
+                showNotification("🚀 Workflow saved to MongoDB & pushed to connected Lulu clients!");
+            } catch (err) {
+                alert("Failed to save workflow: " + err.message);
+            }
+        }
+
+        async function setActiveWorkflow() {
+            if (!checkAuthOrPrompt()) return;
+            try {
+                const res = await fetch(`/api/workflow/activate/${selectedWorkflow.workflow_id}`, {
+                    method: 'POST',
+                    headers: getAuthHeaders()
+                });
+                if (res.status === 401) {
+                    showAuthExpired();
+                    return;
+                }
+                showNotification(`⭐ Set '${selectedWorkflow.title}' as active workflow for all trainees!`);
+                loadWorkflows(selectedWorkflow.workflow_id);
+            } catch (err) {
+                alert("Error setting active workflow: " + err.message);
+            }
+        }
+
+        // Modals
+        function openNewWorkflowModal() {
+            if (!checkAuthOrPrompt()) return;
+            document.getElementById('newWorkflowModal').classList.remove('hidden');
+        }
+
+        function closeNewWorkflowModal() {
+            document.getElementById('newWorkflowModal').classList.add('hidden');
+        }
+
+        async function handleCreateWorkflowSubmit(e) {
+            e.preventDefault();
+            const wfData = {
+                workflow_id: document.getElementById('newWfId').value.trim(),
+                title: document.getElementById('newWfTitle').value.trim(),
+                window_title: document.getElementById('newWfWindow').value.trim(),
+                category: document.getElementById('newWfCategory').value.trim(),
+                steps: [
+                    {
+                        step_num: 1,
+                        target_button: "Action 1",
+                        badge_text: "Step 1: Click Action 1",
+                        voice_text: "Welcome! Click Action 1 to begin.",
+                        verify_screen_text: "Action 1 (Done)"
+                    }
+                ]
+            };
+
+            try {
+                const res = await fetch('/api/workflows/create', {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify(wfData)
+                });
+                if (res.status === 401) {
+                    showAuthExpired();
+                    return;
+                }
+                closeNewWorkflowModal();
+                showNotification(`✨ Created workflow '${wfData.title}'!`);
+                loadWorkflows(wfData.workflow_id);
+            } catch (err) {
+                alert("Failed to create workflow: " + err.message);
+            }
+        }
+
+        // ==========================================
+        // TELEMETRY & CHARTS
+        // ==========================================
+        async function loadTelemetryHistory() {
+            try {
+                const res = await fetch('/api/telemetry');
+                const logs = await res.json();
+                const tbody = document.getElementById('logTableBody');
+                tbody.innerHTML = '';
+                logs.forEach(l => appendTelemetryRow(l, false));
+                renderChart(logs);
+            } catch (e) {
+                console.error("Telemetry fetch error:", e);
+            }
+        }
+
+        function appendTelemetryRow(log, isLive = false) {
+            const tbody = document.getElementById('logTableBody');
+            const row = document.createElement('tr');
+            if (isLive) row.className = "flash-row transition";
+
+            const isSlow = (log.duration_seconds || 0) >= 8.0;
+            const badge = isSlow 
+                ? `<span class="px-2 py-0.5 bg-pink-500/20 text-[#fc038c] border border-[#fc038c]/60 rounded text-[10px] font-bold">⚠️ Slow Bottleneck</span>`
+                : `<span class="px-2 py-0.5 bg-emerald-500/20 text-emerald-400 rounded text-[10px] font-bold">✅ Smooth</span>`;
+
+            row.innerHTML = `
+                <td class="p-2.5 text-slate-400">${log.timestamp || 'Just now'}</td>
+                <td class="p-2.5 font-bold text-white">${log.workflow_id || 'Step ' + log.step_num}</td>
+                <td class="p-2.5 text-slate-300">${log.target_button || 'Action'}</td>
+                <td class="p-2.5 font-bold text-pink-300">${log.duration_seconds}s</td>
+                <td class="p-2.5 text-right">${badge}</td>
+            `;
+
+            tbody.insertBefore(row, tbody.firstChild);
+
+            // Limit table to latest 30 rows
+            while (tbody.children.length > 30) {
+                tbody.removeChild(tbody.lastChild);
+            }
+        }
+
+        function renderChart(logs) {
+            const stepTimes = [];
+            const stepLabels = [];
+
+            logs.forEach(l => {
+                const idx = (l.step_num || 1) - 1;
+                stepTimes[idx] = l.duration_seconds;
+                stepLabels[idx] = `Step ${l.step_num}`;
+            });
+
+            const colors = stepTimes.map(t => (t || 0) >= 8.0 ? '#fc038c' : '#38bdf8');
+            const ctx = document.getElementById('telemetryChart').getContext('2d');
+
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
+            chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: stepLabels.length ? stepLabels : ['Step 1', 'Step 2', 'Step 3'],
+                    datasets: [{
+                        label: 'Duration (Seconds)',
+                        data: stepTimes.length ? stepTimes : [0, 0, 0],
+                        backgroundColor: colors.length ? colors : ['#38bdf8', '#38bdf8', '#38bdf8'],
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                            ticks: { color: '#94a3b8', font: { family: 'JetBrains Mono' } }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#94a3b8', font: { family: 'Plus Jakarta Sans', weight: 'bold' } }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+
+        function updateChartWithNewLog(log) {
+            if (!chartInstance) return;
+            const idx = (log.step_num || 1) - 1;
+            const label = `Step ${log.step_num}`;
+
+            while (chartInstance.data.labels.length <= idx) {
+                chartInstance.data.labels.push(`Step ${chartInstance.data.labels.length + 1}`);
+                chartInstance.data.datasets[0].data.push(0);
+                chartInstance.data.datasets[0].backgroundColor.push('#38bdf8');
+            }
+
+            chartInstance.data.datasets[0].data[idx] = log.duration_seconds;
+            chartInstance.data.datasets[0].backgroundColor[idx] = log.duration_seconds >= 8.0 ? '#fc038c' : '#38bdf8';
+            chartInstance.update();
+        }
+
+        async function clearTelemetryData() {
+            if (!checkAuthOrPrompt()) return;
+            try {
+                const res = await fetch('/api/telemetry/clear', {
+                    method: 'POST',
+                    headers: getAuthHeaders()
+                });
+                if (res.status === 401) {
+                    showAuthExpired();
+                    return;
+                }
+                showNotification("🗑️ Telemetry feed cleared!");
+            } catch (e) {
+                alert("Error clearing telemetry: " + e.message);
+            }
+        }
+
+        // ==========================================
+        // HELPERS
+        // ==========================================
+        function checkAuthOrPrompt() {
+            if (!managerToken) {
+                openLoginModal();
+                return false;
+            }
+            return true;
+        }
+
+        function showAuthExpired() {
+            managerToken = null;
+            localStorage.removeItem('lulu_manager_jwt');
+            updateAuthStatusUI();
+            openLoginModal();
+            document.getElementById('loginErrorMsg').textContent = "Session expired. Please log in again.";
+            document.getElementById('loginErrorMsg').classList.remove('hidden');
+        }
+
+        function showNotification(text) {
+            const notif = document.createElement('div');
+            notif.className = "fixed bottom-6 right-6 z-50 glass-panel bg-[#15152a] text-white px-5 py-3 rounded-xl border border-pink-500/40 shadow-2xl flex items-center gap-3 text-xs font-semibold transform transition duration-300 translate-y-4 opacity-0";
+            notif.innerHTML = `<span>${text}</span>`;
+            document.body.appendChild(notif);
+
+            setTimeout(() => {
+                notif.classList.remove('translate-y-4', 'opacity-0');
+            }, 10);
+
+            setTimeout(() => {
+                notif.classList.add('translate-y-4', 'opacity-0');
+                setTimeout(() => notif.remove(), 350);
+            }, 3500);
+        }
+
+        function escapeHtml(str) {
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+    </script>
+</body>
+</html>

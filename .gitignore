@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+
+# Secrets & Environment Variables
+.env
+lulu-backend-api/.env
+
+# Audio and Temp Caches
+*.mp3
+temp_audio/
+E:/DevCache/
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
